@@ -17,7 +17,17 @@ public enum UserRole {
 
     public static UserRole of(String role) {
         return Arrays.stream(UserRole.values())
-                .filter(r -> r.name().equalsIgnoreCase("ROLE_" + role.toUpperCase()))
+                .filter(r -> r.name().equalsIgnoreCase(role))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 UserRole"));
+    }
+
+    /**
+     *  회원가입 할때 user role에 "role_"을 사용하지 않기 위해 따로 만들었습니다.
+     */
+    public static UserRole signup(String role) {
+        return Arrays.stream(UserRole.values())
+                .filter(r -> r.name().equalsIgnoreCase("ROLE_" + role))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 UserRole"));
     }
