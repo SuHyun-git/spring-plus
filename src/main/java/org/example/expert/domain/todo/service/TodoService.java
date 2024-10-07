@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.example.expert.client.WeatherClient;
 import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.common.exception.InvalidRequestException;
+import org.example.expert.domain.todo.dto.response.SearchTodoResponse;
+import org.example.expert.domain.todo.dto.request.SearchTodosRequest;
 import org.example.expert.domain.todo.dto.request.GetTodosRequest;
 import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
 import org.example.expert.domain.todo.dto.response.TodoResponse;
@@ -108,5 +110,53 @@ public class TodoService {
                 todo.getCreatedAt(),
                 todo.getModifiedAt()
         );
+    }
+
+    public Page<SearchTodoResponse> searchTodos(int page, int size, SearchTodosRequest searchTodosRequest) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+
+        Page<Todo> todoList;
+        LocalDateTime startDate = null;
+        LocalDateTime endDate = null;
+
+        /**
+         * 시작 날짜에 따라 만약 없다면 모든 데이터의 초기 날짜를 입력하고 값이 있다면 getTodosRequest에서 받은 String데이터를 LocalDateTime으로 변경한다.
+         * 종료 날짜도 위와 같이 한다. 종료 날짜에 데이터가 없는 경우 현재 시간을 입력한다.
+         */
+        if (searchTodosRequest.getStartDate() != null) {
+            startDate = LocalDateTime.of(Integer.parseInt(searchTodosRequest.getStartDate().substring(0, 4)), Integer.parseInt(searchTodosRequest.getStartDate().substring(5, 7)), Integer.parseInt(searchTodosRequest.getStartDate().substring(8, 10)), 0, 0, 0);
+        } else {
+            startDate = LocalDateTime.of(2020, 1, 31, 0, 0, 0);
+        }
+
+        if (searchTodosRequest.getEndDate() != null) {
+            endDate = LocalDateTime.of(Integer.parseInt(searchTodosRequest.getEndDate().substring(0, 4)), Integer.parseInt(searchTodosRequest.getEndDate().substring(5, 7)), Integer.parseInt(searchTodosRequest.getEndDate().substring(8, 10)), 23, 59, 59);
+        } else {
+            endDate = LocalDateTime.now();
+        }
+
+
+        /**
+         * 제목과 닉네임에 따라 쿼리를 날림
+         */
+        if (searchTodosRequest.getTitle() != null && searchTodosRequest.getNickName() != null) {
+            // 제목과 닉네임을 모두 입력한 경우
+            todoList = todoRepository.findAllByTitleAndNickName(pageable, searchTodosRequest.getTitle(), searchTodosRequest.getNickName(), startDate, endDate);
+        } else if (searchTodosRequest.getTitle() == null && searchTodosRequest.getNickName() != null) {
+            // 제목은 없고 닉네임만 입력한 경우
+            todoList = todoRepository.findAllByNickName(pageable, searchTodosRequest.getNickName(), startDate, endDate);
+        } else if (searchTodosRequest.getTitle() != null && searchTodosRequest.getNickName() == null) {
+            // 제목을 입력하고 닉네임이 없는 경우
+            todoList = todoRepository.findAllByTitle(pageable, searchTodosRequest.getTitle(), startDate, endDate);
+        } else {
+            // 제목과 닉네임 모두 없는경우
+            todoList = todoRepository.findAll(pageable);
+        }
+
+        return todoList.map(todo -> new SearchTodoResponse(
+                todo.getTitle(),
+                todo.getManagers().size(),
+                todo.getComments().size()
+        ));
     }
 }
