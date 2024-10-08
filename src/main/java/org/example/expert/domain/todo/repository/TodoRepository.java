@@ -17,14 +17,12 @@ public interface TodoRepository extends JpaRepository<Todo, Long>, TodoDslReposi
     @Query("SELECT t FROM Todo t LEFT JOIN FETCH t.user u WHERE t.weather = :weather and t.modifiedAt BETWEEN :startDate AND :endDate ORDER BY t.modifiedAt DESC")
     Page<Todo> findAllByOrderByModifiedAtAndWeatherAndDateDesc(Pageable pageable, String weather, LocalDateTime startDate, LocalDateTime endDate);
 
-
-
-    @Query("SELECT t FROM Todo t LEFT JOIN FETCH t.user u WHERE t.title LIKE %:title% AND u.nickName LIKE %:nickName% and t.createdAt BETWEEN :startDate AND :endDate")
-    Page<Todo> findAllByTitleAndNickName(Pageable pageable, String title, String nickName, LocalDateTime startDate, LocalDateTime endDate);
-
-    @Query("SELECT t FROM Todo t LEFT JOIN FETCH t.user u WHERE t.title LIKE %:title% and t.createdAt BETWEEN :startDate AND :endDate")
-    Page<Todo> findAllByTitle(Pageable pageable, String title, LocalDateTime startDate, LocalDateTime endDate);
-
-    @Query("SELECT t FROM Todo t LEFT JOIN FETCH t.user u WHERE u.nickName LIKE %:nickName% and t.createdAt BETWEEN :startDate AND :endDate")
-    Page<Todo> findAllByNickName(Pageable pageable, String nickName, LocalDateTime startDate, LocalDateTime endDate);
+//    @Query("SELECT t FROM Todo t LEFT JOIN FETCH t.user u WHERE t.title LIKE %:title% AND u.nickName LIKE %:nickName% and t.createdAt BETWEEN :startDate AND :endDate")
+//    Page<Todo> findAllByTitleAndNickName(Pageable pageable, String title, String nickName, LocalDateTime startDate, LocalDateTime endDate);
+//
+//    @Query("SELECT t FROM Todo t LEFT JOIN FETCH t.user u WHERE t.title LIKE %:title% and t.createdAt BETWEEN :startDate AND :endDate")
+//    Page<Todo> findAllByTitle(Pageable pageable, String title, LocalDateTime startDate, LocalDateTime endDate);
+//
+//    @Query("SELECT t FROM Todo t LEFT JOIN FETCH t.managers u WHERE u.user.nickName LIKE %:nickName% and t.createdAt BETWEEN :startDate AND :endDate")
+//    Page<Todo> findAllByNickName(Pageable pageable, String nickName, LocalDateTime startDate, LocalDateTime endDate);
 }

@@ -1,13 +1,20 @@
 package org.example.expert.domain.todo.repository;
 
+import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.example.expert.domain.todo.entity.QTodo;
 import org.example.expert.domain.todo.entity.Todo;
-import org.example.expert.domain.user.entity.QUser;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+
+import static org.example.expert.domain.manager.entity.QManager.manager;
+import static org.example.expert.domain.todo.entity.QTodo.todo;
 
 @RequiredArgsConstructor
 @Repository
@@ -17,15 +24,78 @@ public class TodoDslRepositoryImpl implements TodoDslRepository{
 
     @Override
     public Optional<Todo> findByIdWithUser(Long todoId) {
-        QTodo todo = QTodo.todo;  // QueryDSL에서 생성된 QTodo 클래스
-        QUser user = QUser.user;  // QueryDSL에서 생성된 QUser 클래스
 
-        Todo result = jpaQueryFactory
+        return Optional.ofNullable(jpaQueryFactory
                 .selectFrom(todo)
-                .leftJoin(todo.user, user).fetchJoin()  // LEFT JOIN과 FETCH JOIN을 사용
-                .where(todo.id.eq(todoId))  // 조건: Todo의 ID가 todoId인 경우
-                .fetchOne();  // 단일 결과를 반환
+                .leftJoin(todo.managers, manager).fetchJoin()
+                .where(todo.id.eq(todoId))
+                .fetchOne()
+        );
+    }
 
-        return Optional.ofNullable(result);
+    @Override
+    public Page<Todo> findAllByTitleAndNickName(Pageable pageable, String title, String nickName, LocalDateTime startDate, LocalDateTime endDate) {
+        List<Todo> todoList = jpaQueryFactory
+                .selectFrom(todo)
+                .join(todo.managers, manager).fetchJoin()
+                .where(
+                        todo.title.contains(title),
+                        manager.user.nickName.contains(nickName),
+                        todo.createdAt.between(startDate, endDate)
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = jpaQueryFactory
+                .select(Wildcard.count)
+                .from(todo)
+                .fetchOne();
+
+        return new PageImpl<>(todoList, pageable, total);
+    }
+
+    @Override
+    public Page<Todo> findAllByTitle(Pageable pageable, String title, LocalDateTime startDate, LocalDateTime endDate) {
+        List<Todo> todoList = jpaQueryFactory
+                .select(todo)
+                .from(todo)
+                .join(todo.managers, manager).fetchJoin()
+                .where(
+                        todo.title.contains(title),
+                        todo.createdAt.between(startDate, endDate)
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = jpaQueryFactory
+                .select(Wildcard.count)
+                .from(todo)
+                .fetchOne();
+
+        return new PageImpl<>(todoList, pageable, total);
+    }
+
+    @Override
+    public Page<Todo> findAllByNickName(Pageable pageable, String nickName, LocalDateTime startDate, LocalDateTime endDate) {
+        List<Todo> todoList = jpaQueryFactory
+                .select(todo)
+                .from(todo)
+                .join(todo.managers, manager).fetchJoin()
+                .where(
+                        manager.user.nickName.contains(nickName),
+                        todo.createdAt.between(startDate, endDate)
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = jpaQueryFactory
+                .select(Wildcard.count)
+                .from(todo)
+                .fetchOne();
+
+        return new PageImpl<>(todoList, pageable, total);
     }
 }
