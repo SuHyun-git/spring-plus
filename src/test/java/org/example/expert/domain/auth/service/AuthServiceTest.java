@@ -38,8 +38,9 @@ class AuthServiceTest {
     @Autowired
     private ContentNegotiatingViewResolver viewResolver;
 
-    // 10000기준 8초 740
-    // 100000기준 1분 21초
+    // 10_000기준 8초 740
+    // 100_000기준 1분 21초
+    // 1_000_000기준 13분 -> 54초
     @Transactional
     public void saveSignup(List<User> signupRequestList){
         String sql = "INSERT INTO USERS (email, password, nick_name, user_role) " +
@@ -103,19 +104,15 @@ class AuthServiceTest {
     @Test
     void signup_100만건_유저_생성하기() {
         List<User> userList = new ArrayList<>();
+
+        String encodedPassword = passwordEncoder.encode("Aa88888888!");
+
         for (int i = 0; i < 1_000_000; i++) {
-            // given
-            SignupRequest signupRequest = new SignupRequest("user" + i + "@naver.com", "Aa88888888!", "USER", "자동" + i);
-
-            String encodedPassword = passwordEncoder.encode(signupRequest.getPassword());
-
-            UserRole userRole = UserRole.signup(signupRequest.getUserRole());
-
             userList.add(new User(
-                    signupRequest.getEmail(),
+                    "user" + i + "@naver.com",
                     encodedPassword,
-                    signupRequest.getNickName(),
-                    userRole
+                    "자동" + i,
+                    UserRole.ROLE_USER
             ));
         }
 
