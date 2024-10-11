@@ -109,7 +109,7 @@
 ## 100만건 데이터를 넣었을 때 시간
 ![image](https://github.com/user-attachments/assets/0ce1b3df-eda8-4205-b80f-e3878af4fc20)
 
-시간 줄인 후
+시간 줄인 후   
 ![image](https://github.com/user-attachments/assets/8db7f6f9-44c4-449d-ba01-52067baa797e)
 
 
